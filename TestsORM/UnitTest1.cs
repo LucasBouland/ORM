@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace nORMeTests
+namespace TestsORM
 {
     [TestClass]
     public class UnitTest1
