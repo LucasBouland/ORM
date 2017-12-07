@@ -2,10 +2,10 @@
 
 Projet ORM C# Bachelor 3 Ingesup
 Participants:
- -ARSAC Guillaume
- -BEZANCON Pierre
- -BOULAND Lucas
- -GBAHA Patrick
+ * ARSAC Guillaume
+ * BEZANCON Pierre
+ * BOULAND Lucas
+ * GBAHA Patrick
 
 ### What is this repository for? ###
 
@@ -15,9 +15,10 @@ Participants:
 ### How do I get set up? ###
 
 V0.1:
-1.Installer MySQL.
-2.Remplacer les champs dans les connexions par ceux du serveur et utilisateur qui vont êtres utilisés.
-3.Lancer les tests unitaires pour vérifier si l'ORM fonctionne ou non (spoiler: non).
+* 1.Installer MySQL.
+* 2.Restaurer les packets Nugets de la solution.
+* 3.Remplacer les champs dans les connexions par ceux du serveur et utilisateur qui vont * êtres utilisés.
+* 4.Lancer les tests unitaires pour vérifier si l'ORM fonctionne ou non (spoiler: non).
 
 * Summary of set up
 * Configuration
