@@ -9,21 +9,23 @@ using System.Collections.Generic;
 namespace TestsORM
 {
     // Classe representant la table Users
-    internal class users
+    internal class Users
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public int age { get; set; }
+        public int Id { get; set; }
+        public string Firstname { get; set; }
+        public string Lastname { get; set; }
+        public string Email { get; set; }
+        public int AddressId { get; set; }
     }
 
     [TestClass]
-    public class UnitTest1
+    public class UnitTests
     {
         // TODO : mettre les champs en parametres XML
         private string server = "localhost";
         private string database = "bddtest";
         private string uid = "root";
-        private string password = "";
+        private string password = "root";
 
         //MySQL
         // TODO : simplifier les requetes
@@ -34,57 +36,53 @@ namespace TestsORM
         // TODO : Supprimer la base après les tests
         #region DB and Tables Creation
         [TestMethod]
-        public void CreateTestDatabase()
+        public void CreateSetup()
+        {
+            TestCreateDatabase();
+            TestCreateTable();
+            TestCreateRows();
+        }
+
+        public void TestCreateDatabase()
         {
             string connStr = "SERVER=" + server + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             //string connStr = "server=localhost;user=root;port=3306;password=;";
             MySqlConnection conn = new MySqlConnection(connStr);
             MySqlCommand cmd;
             string s1;
-            try
-            {
-                conn.Open();
-                s1 = "CREATE DATABASE IF NOT EXISTS `bddtest`;";
-                cmd = new MySqlCommand(s1, conn);
-                cmd.ExecuteNonQuery();
-                conn.Close();
-            }
-            catch (MySqlException e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+
+            conn.Open();
+            s1 = "CREATE DATABASE IF NOT EXISTS `bddtest`;";
+            cmd = new MySqlCommand(s1, conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+
+
         }
 
-        [TestMethod]
-        public void CreateTestTable()
+        public void TestCreateTable()
         {
             string connStr = "SERVER=" + server + ";" + "DATABASE=" +
             database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             MySqlConnection conn = new MySqlConnection(connStr);
             MySqlCommand cmd;
             string s1;
-            try
-            {
-                conn.Open();
-                s1 = @"CREATE TABLE IF NOT EXISTS `users` (
-  `idusers` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) DEFAULT NULL,
-  `age` int(11) DEFAULT NULL,
-  PRIMARY KEY(`idusers`),
-  UNIQUE KEY `idusers_UNIQUE` (`idusers`)
+
+            conn.Open();
+            s1 = @"CREATE TABLE IF NOT EXISTS `users` (
+`idusers` int(11) NOT NULL AUTO_INCREMENT,
+`name` varchar(45) DEFAULT NULL,
+`age` int(11) DEFAULT NULL,
+PRIMARY KEY(`idusers`),
+UNIQUE KEY `idusers_UNIQUE` (`idusers`)
 ) ENGINE = MyISAM AUTO_INCREMENT = 54 DEFAULT CHARSET = utf8;";
-                cmd = new MySqlCommand(s1, conn);
-                cmd.ExecuteNonQuery();
-                conn.Close();
-            }
-            catch (MySqlException e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            cmd = new MySqlCommand(s1, conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+
         }
 
-        [TestMethod]
-        public void CreateTestRows()
+        public void TestCreateRows()
         {
             string connStr = "SERVER=" + server + ";" + "DATABASE=" +
             database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
@@ -92,49 +90,45 @@ namespace TestsORM
             MySqlCommand cmd;
             string s1;
             string s2;
-            try
-            {
-                conn.Open();
-                
-                s1 = "TRUNCATE TABLE `users`";
-                cmd = new MySqlCommand(s1, conn);
-                cmd.ExecuteNonQuery();
+            conn.Open();
 
-                s2 = "INSERT INTO users (name, age) VALUES ('Ahab', '45'), ('Ishmael', '18'), ('Janine', '45')";
-                cmd = new MySqlCommand(s2, conn);
-                cmd.ExecuteNonQuery();
+            s1 = "TRUNCATE TABLE `users`";
+            cmd = new MySqlCommand(s1, conn);
+            cmd.ExecuteNonQuery();
 
-                conn.Close();
-            }
-            catch (MySqlException e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            s2 = "INSERT INTO users (name, age) VALUES ('Ahab', '45'), ('Ishmael', '18'), ('Janine', '45')";
+            cmd = new MySqlCommand(s2, conn);
+            cmd.ExecuteNonQuery();
+
+            conn.Close();
         }
-        #endregion
+    }
+    #endregion
+    [TestClass]
+    public class CommandTest
+    {
         // TODO : Affiner tests avec le mapping demandé (II.1)
 
-        // TODO : Mettre test prenant en compte les opérateurs
-        // ainsi que le AND / OR
+        // TODO : Mettre test prenant en compte les opérateurs ainsi que le AND / OR
         [TestMethod]
         public void SelectAllTest()
         {
-            DBConnect db = new DBConnect();
-            users u = new users();
-            // SELECT * FROM Users
-            List<string>[] list = db.Select(u);
-            Assert.AreEqual(list[1][0], "Ahab");
-            Assert.AreEqual(list[2][0], "Ishmael");
-            // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
-            List<string> parameters = new List<string>();
-            parameters.Add("45");
-            List<string>[] list = db.Select(u.age, parameters);
-            // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
-            parameters.Clear();
-            parameters.Add("34");
+            /*DBConnect db = new DBConnect();
+             users u = new users();
+             // SELECT * FROM Users
+             List<string>[] list = db.Select(u);
+             Assert.AreEqual(list[1][0], "Ahab");
+             Assert.AreEqual(list[2][0], "Ishmael");
+             // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
+             List<string> parameters = new List<string>();
+             parameters.Add("45");
+             List<string>[] list = db.Select(u.age, parameters);
+             // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
+             parameters.Clear();
+             parameters.Add("34");
 
-            List<string>[] none = db.Select(u.age, parameters); // Chercher "Jackie"
-            Assert.AreEqual(none, null);
+             List<string>[] none = db.Select(u.age, parameters); // Chercher "Jackie"
+             Assert.AreEqual(none, null);*/
         }
 
         [TestMethod]
@@ -181,5 +175,7 @@ namespace TestsORM
             Assert.AreEqual(list, null);
         }
     }
-
 }
+
+   
+
