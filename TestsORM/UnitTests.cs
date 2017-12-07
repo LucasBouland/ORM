@@ -102,8 +102,10 @@ UNIQUE KEY `idusers_UNIQUE` (`idusers`)
 
             conn.Close();
         }
+        #endregion
     }
-    #endregion
+
+
     [TestClass]
     public class CommandTest
     {
@@ -177,5 +179,5 @@ UNIQUE KEY `idusers_UNIQUE` (`idusers`)
     }
 }
 
-   
+
 
