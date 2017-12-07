@@ -19,7 +19,7 @@ namespace TestsORM
     }
 
     [TestClass]
-    public class UnitTests
+    public class SetupTests
     {
         // TODO : mettre les champs en parametres XML
         private string server = "localhost";
