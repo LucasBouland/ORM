@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using Npgsql;
+using System.Reflection;
 
 namespace ORM
 {
@@ -121,9 +122,48 @@ namespace ORM
             }
         }
 
-        public List<string> SelectOne()
+        public T SelectOne<T>(T classe, PropertyInfo prop, params String[] wheres)
         {
-            throw new NotImplementedException();
+            TableSql table = NameConverter.GetTableSql(classe);
+            string whers = "";
+            if (prop.GetValue(classe) != null)
+            {
+                object propvalue = prop.GetValue(classe);
+                object propname = prop.Name;
+                whers = $"WHERE {propname}='{propvalue}'";
+            }
+
+            string query = $"SELECT * FROM {table.TableName} {whers}";
+
+            List<T> list = new List<T>();
+
+            foreach (string where in wheres)
+            {
+                query = $"{query} {where}";
+            }
+
+            if (this.OpenConnection() == true)
+            {
+                T obj = default(T);
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                PropertyInfo[] properties = typeof(T).GetProperties();
+                while (dataReader.Read())
+                {
+                    //T obj = Activator.CreateInstance(typeof(T));
+                    foreach (PropertyInfo property in properties)
+                    {
+
+                        var a = dataReader[NameConverter.ToSql(property.Name)].ToString();
+                        property.SetValue(obj, a);
+                        Console.WriteLine(property.Name);
+                    }
+                }
+                dataReader.Close();
+                this.CloseConnection();
+                return obj;
+            }
+            return default(T);
         }
 
         public List<string>[] Select()
