@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectAllTest()
         {
-            DBConnect db = new DBConnect();
+            DbConnect db = new DbConnect();
             User u = new User();
             Console.WriteLine(typeof(User));
             // SELECT * FROM Users
@@ -234,7 +234,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectOneTest()
         {
-            DBConnect db = new DBConnect();
+            DbConnect db = new DbConnect();
             // SELECT * FROM bddtest.users WHERE bddtest.users = "Ahab" LIMIT 1
             List<string> found = db.SelectOne(); // Cherche "Ahab"
             Assert.AreEqual(found[1], "Ahab");
@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void InsertTest()
         {
-            DBConnect db = new DBConnect();
+            DbConnect db = new DbConnect();
             User user = new User();
             user.Id = 0;
             user.Username = "Jacques";
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void UpdateTest()
         {
-            DBConnect db = new DBConnect();
+            DbConnect db = new DbConnect();
             // UPDATE bddtest.users SET name='Francois' WHERE name='Ishamel'
             //OU UPDATE bddtest.users SET name='Francois' WHERE idusers=2
             db.Update(); // Changer "Ishamel" en "Francois"
@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void DeleteTest()
         {
-            DBConnect db = new DBConnect();
+            DbConnect db = new DbConnect();
             // DELETE FROM bddtest.users WHERE name="Ahab"
             db.Delete(); // Supprimer "Ahab"
             List<string> list = db.SelectOne(); // select Ahab
