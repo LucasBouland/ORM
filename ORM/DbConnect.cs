@@ -78,10 +78,36 @@ namespace ORM
                 return false;
             }
         }
-        
-        public void Insert()
+
+        public void Insert<T>(T classToInsert, List<string> ignoredColumnList = null)
         {
-            string query = "INSERT INTO users (name, age) VALUES ('joey', '18'), ('Jamel', '45')";
+            if (ignoredColumnList == null)
+            {
+                ignoredColumnList = new List<string>() { "Id" };
+            }
+            TableSql table = NameConverter.GetTableSql(classToInsert);
+            string columns = string.Join(",", table.ColumnList.ToArray());
+            columns = columns.Replace("id,", string.Empty); // on enleve l'id en dur pour l'instant
+            Type myType = classToInsert.GetType();
+            IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+            string values = "";
+            foreach (PropertyInfo prop in props)
+            {
+                System.Console.WriteLine(prop.Name);
+                object propValue = prop.GetValue(classToInsert, null);
+                // on verifie si la propieté fait partie des champs ignorés
+                if (!ignoredColumnList.Where(o => string.Equals(prop.Name, o, StringComparison.OrdinalIgnoreCase)).Any())
+                {
+                    values += '"';
+                    values += propValue;
+                    values += '"' + ",";
+                }
+            }
+            System.Console.WriteLine(values);
+            values = values.Remove(values.Length - 1);
+
+            string query = "INSERT INTO " + table.TableName + " (" + columns + ") VALUES (" + @values + ");";
+            System.Console.WriteLine(query);
 
             if (this.OpenConnection() == true)
             {
