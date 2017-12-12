@@ -31,7 +31,7 @@ namespace ORM
         private void Initialize()
         {
             server = "localhost";
-            database = "testbdd";
+            database = "bddtest";
             uid = "root";
             password = "";
             string connectionString;
