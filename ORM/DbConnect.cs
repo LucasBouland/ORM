@@ -122,21 +122,44 @@ namespace ORM
             }
         }
 
-        public T SelectOne<T>(T classe, PropertyInfo prop, params String[] wheres)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="class"></param>
+        /// <param name="correspondance"></param>
+        /// <param name="wheres"></param>
+        /// <param name="selects"></param>
+        /// <returns></returns>
+        public T SelectOne<T>(T @class, PropertyInfo correspondance, string[] wheres, params string[] selects)
         {
-            TableSql table = NameConverter.GetTableSql(classe);
-            string whers = "";
-            if (prop.GetValue(classe) != null)
-            {
-                object propvalue = prop.GetValue(classe);
-                object propname = prop.Name;
-                whers = $"WHERE {propname}='{propvalue}'";
-            }
-
-            string query = $"SELECT * FROM {table.TableName} {whers}";
-
+            TableSql table = NameConverter.GetTableSql(@class);
+            string wherequery = "";
+            string selectquery = "";
             List<T> list = new List<T>();
 
+            //Vérifie si un where doit être fait dans la requête par rapport à un champ nommé en c# "correspondance" de la table
+            if (correspondance.GetValue(@class) != null)
+            {
+                object propvalue = correspondance.GetValue(@class);
+                object propname = correspondance.Name;
+                wherequery = $"WHERE {propname}='{propvalue}'";
+            }
+
+            //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
+            if (selects.Length == 0)
+                selectquery = "*";
+
+            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+            foreach (string select in selects)
+            {
+                selectquery = $"{selectquery}, {select}";
+            }
+
+            //Prépare la requête de base (avec les selects, la table et la correspondance si elle existe)
+            string query = $"SELECT {selectquery} FROM {table.TableName} {wherequery}";
+
+            //Si l'utilisateur ajoute des wheres, les ajoutes à la requête
             foreach (string where in wheres)
             {
                 query = $"{query} {where}";
