@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 using MySql.Data.MySqlClient;
 using Npgsql;
 
@@ -96,7 +97,7 @@ namespace ORM
                 System.Console.WriteLine(prop.Name);
                 object propValue = prop.GetValue(classToInsert, null);
                 // on verifie si la propieté fait partie des champs ignorés
-                if (!ignoredColumnList.Where(o => string.Equals(prop.Name, o, StringComparison.OrdinalIgnoreCase)).Any())
+                if (!ignoredColumnList.Any(o => string.Equals(prop.Name, o, StringComparison.OrdinalIgnoreCase)))
                 {
                     values += '"';
                     values += propValue;
@@ -135,9 +136,27 @@ namespace ORM
             }
         }
         
-        public void Delete()
+        public void Delete<T>(T classToDelete, List<T> objectToDelete)
         {
-            string query = "DELETE FROM users WHERE name='Joe'";
+            string query = "DELETE FROM ";
+
+            TableSql table = NameConverter.GetTableSql(classToDelete);
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+        public void DeleteAll<T>(T classToDelete)
+        {
+            string query = "DELETE FROM ";
+
+            TableSql table = NameConverter.GetTableSql(classToDelete);
+
+            query += table.TableName;
 
             if (this.OpenConnection() == true)
             {

@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         {
             DbConnect db = new DbConnect();
             // DELETE FROM bddtest.users WHERE name="Ahab"
-            db.Delete(); // Supprimer "Ahab"
+            //db.Delete(); // Supprimer "Ahab"
             List<string> list = db.SelectOne(); // select Ahab
             Assert.AreEqual(list, null);
         }
