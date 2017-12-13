@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using Npgsql;
+using System.Reflection;
 
 namespace ORM
 {
@@ -109,9 +110,23 @@ namespace ORM
             }
         }
         
-        public void Delete()
+        public void Delete<T>(T classToDelete)
         {
-            string query = "DELETE FROM users WHERE name='Joe'";
+            TableSql table = NameConverter.GetTableSql(classToDelete);
+            string whereCondition = "";
+            int i = 0;
+
+            IList<PropertyInfo> props = new List<PropertyInfo>(classToDelete.GetType().GetProperties());
+
+            foreach (PropertyInfo prop in props)
+            {
+                whereCondition += table.ColumnList[i] + " = " + "'" + prop.GetValue(classToDelete) + "'" + " AND ";
+                i++;
+            }
+
+            whereCondition = whereCondition.Remove(whereCondition.Length - 5);
+
+            string query = $"DELETE FROM {table.TableName} WHERE {whereCondition}";
 
             if (this.OpenConnection() == true)
             {
