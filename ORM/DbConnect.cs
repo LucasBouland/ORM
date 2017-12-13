@@ -107,7 +107,7 @@ namespace ORM
             System.Console.WriteLine(values);
             values = values.Remove(values.Length - 1);
 
-            string query = "INSERT INTO " + table.TableName + " (" + columns + ") VALUES (" + @values + ");";
+            string query = $"INSERT INTO {table.TableName} ({columns}) VALUES ({@values});";
             System.Console.WriteLine(query);
 
             if (this.OpenConnection() == true)
@@ -136,11 +136,23 @@ namespace ORM
             }
         }
         
-        public void Delete<T>(T classToDelete, List<T> objectToDelete)
+        public void Delete<T>(T classToDelete)
         {
-            string query = "DELETE FROM ";
-
             TableSql table = NameConverter.GetTableSql(classToDelete);
+            string whereCondition = "";
+            int i = 0;
+
+            IList<PropertyInfo> props = new List<PropertyInfo>(classToDelete.GetType().GetProperties());
+
+            foreach (PropertyInfo prop in props)
+            {
+                whereCondition += table.ColumnList[i] + " = " + "'" + prop.GetValue(classToDelete) + "'" + " AND ";
+                i++;
+            }
+
+            whereCondition = whereCondition.Remove(whereCondition.Length - 5);
+
+            string query = $"DELETE FROM {table.TableName} WHERE {whereCondition}";
 
             if (this.OpenConnection() == true)
             {
@@ -150,13 +162,19 @@ namespace ORM
             }
         }
 
+        public void Delete<T>(List<T> listClassToDelete)
+        {
+            foreach (T classToDelete in listClassToDelete)
+            {
+                Delete(classToDelete);
+            }
+        }
+
         public void DeleteAll<T>(T classToDelete)
         {
-            string query = "DELETE FROM ";
-
             TableSql table = NameConverter.GetTableSql(classToDelete);
 
-            query += table.TableName;
+            string query = $"DELETE FROM {table.TableName}";
 
             if (this.OpenConnection() == true)
             {

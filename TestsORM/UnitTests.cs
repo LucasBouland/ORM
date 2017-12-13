@@ -275,10 +275,17 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         public void DeleteTest()
         {
             DbConnect db = new DbConnect();
-            // DELETE FROM bddtest.users WHERE name="Ahab"
-            //db.Delete(); // Supprimer "Ahab"
-            db.DeleteAll(new User());
-            //List<string> list = db.SelectOne(); // select Ahab
+
+            User user = new User();
+            user.Id = 4;
+            user.Username = "Jacques";
+            user.Password = "Test";
+            user.Email = @"Jacques.Test@mail.com";
+            user.AddressId = 1;
+
+            db.Delete(user); 
+            //db.DeleteAll(new User());
+            //List<string> list = db.SelectOne();
             //Assert.AreEqual(list, null);
         }
     }
