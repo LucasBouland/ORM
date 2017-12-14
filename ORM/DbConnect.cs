@@ -31,9 +31,9 @@ namespace ORM
         private void Initialize()
         {
             server = "localhost";
-            database = "testbdd";
+            database = "bddtest";
             uid = "root";
-            password = "";
+            password = "root";
             string connectionString;
             connectionString = "SERVER=" + server + ";" + "DATABASE=" +
             database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
@@ -79,7 +79,7 @@ namespace ORM
                 return false;
             }
         }
-        
+
         public void Insert()
         {
             string query = "INSERT INTO users (name, age) VALUES ('joey', '18'), ('Jamel', '45')";
@@ -95,7 +95,7 @@ namespace ORM
                 Console.Write("lmao");
             }
         }
-        
+
         public void Update()
         {
             string query = "UPDATE users SET name='Joe', age='22' WHERE name='joey'";
@@ -109,7 +109,7 @@ namespace ORM
                 this.CloseConnection();
             }
         }
-        
+
         public void Delete()
         {
             string query = "DELETE FROM users WHERE name='Joe'";
@@ -131,7 +131,7 @@ namespace ORM
         /// <param name="wheres"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public T SelectOne<T>(T @class, PropertyInfo correspondance, string[] wheres, params string[] selects)
+        public T SelectOne<T>(T @class, string correspondance, string wheres = " ", params string[] selects)
         {
             TableSql table = NameConverter.GetTableSql(@class);
             string wherequery = "";
@@ -139,12 +139,88 @@ namespace ORM
             List<T> list = new List<T>();
 
             //Vérifie si un where doit être fait dans la requête par rapport à un champ nommé en c# "correspondance" de la table
-            if (correspondance.GetValue(@class) != null)
+            if (correspondance != null)
             {
-                object propvalue = correspondance.GetValue(@class);
-                object propname = correspondance.Name;
-                wherequery = $"WHERE {propname}='{propvalue}'";
+                try
+                {
+                    PropertyInfo corresp = @class.GetType().GetProperty(correspondance);
+                    object propvalue = corresp.GetValue(@class);
+                    string propname = corresp.Name.ToLower();
+                    wherequery = $"WHERE {propname}='{propvalue}'";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
+
+            //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
+            if (selects.Length == 0)
+                selectquery = "*";
+
+            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+            foreach (string select in selects)
+            {
+                selectquery = $"{selectquery}, {select.ToLower()}";
+            }
+
+            //Prépare la requête de base (avec les selects, la table et la correspondance si elle existe)
+            string query = $"SELECT {selectquery} FROM {table.TableName} {wherequery}";
+
+
+            //Si l'utilisateur ajoute des wheres, les ajoutes à la requête
+            query = $"{query} {wheres}";
+            Console.WriteLine("query = " + query);
+            if (this.OpenConnection() == true)
+            {
+                //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                PropertyInfo[] properties = @class.GetType().GetProperties();
+
+                //lit et parcours les propietes de la classe a completer
+                while (dataReader.Read())
+                {
+                    foreach (PropertyInfo property in properties)
+                    {
+                        //recupere la valeur de chaque champs de la classe et les attribues aux membres de la classe
+                        var a = dataReader[NameConverter.ToSql(property.Name)];
+                        property.SetValue(@class, a);
+                    }
+                }
+                //Ferme la connection et l'objet de lecture
+                dataReader.Close();
+                this.CloseConnection();
+                return @class;
+            }
+            return default(T);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="class"></param>
+        /// <param name="correspondance"></param>
+        /// <param name="wheres"></param>
+        /// <param name="selects"></param>
+        /// <returns></returns>
+       /* public string SelectOne(string classname, string correspondance, string[] wheres, params string[] selects)
+        {
+            TableSql table = NameConverter.GetTableSql(classname);
+            string wherequery = "";
+            string selectquery = "";
+            //List<T> list = new List<T>();
+
+            //Vérifie si un where doit être fait dans la requête par rapport à un champ nommé en c# "correspondance" de la table
+            //if (correspondance.GetValue(@class) != null)
+            //{
+            //    object propvalue = correspondance.GetValue(@class);
+                //object propname = correspondance.Name;
+              //  wherequery = $"WHERE {propname}='{propvalue}'";
+            //}
+
+            wherequery = $"WHERE {correspondance}";
 
             //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
             if (selects.Length == 0)
@@ -167,28 +243,28 @@ namespace ORM
 
             if (this.OpenConnection() == true)
             {
-                T obj = default(T);
+                //T obj = default(T);
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 MySqlDataReader dataReader = cmd.ExecuteReader();
-                PropertyInfo[] properties = typeof(T).GetProperties();
+                //PropertyInfo[] properties = typeof(T).GetProperties();
                 while (dataReader.Read())
                 {
                     //T obj = Activator.CreateInstance(typeof(T));
-                    foreach (PropertyInfo property in properties)
+                    //foreach (PropertyInfo property in properties)
                     {
 
-                        var a = dataReader[NameConverter.ToSql(property.Name)].ToString();
-                        property.SetValue(obj, a);
-                        Console.WriteLine(property.Name);
+                        var a = dataReader.ToString();
+                        //property.SetValue(obj, a);
+                       // Console.WriteLine(property.Name);
+                        return a;
                     }
                 }
                 dataReader.Close();
                 this.CloseConnection();
-                return obj;
             }
-            return default(T);
+            return null;
         }
-
+        */
         public List<string>[] Select()
         {
             string query = "SELECT * FROM users";

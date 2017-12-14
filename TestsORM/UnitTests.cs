@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ORM;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace TestsORM
 {
@@ -38,7 +39,7 @@ namespace TestsORM
         private string server = "localhost";
         private string database = "bddtest";
         private string uid = "root";
-        private string password = "";
+        private string password = "root";
 
         //MySQL
         // TODO : simplifier les requetes
@@ -210,7 +211,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             User u = new User();
             Console.WriteLine(typeof(User));
             // SELECT * FROM Users
-            List<User> users = db.Select(new User());
+            //List<User> users = db.Select(new User());
             /*Console.WriteLine(users[1][0]);
             Console.WriteLine(users[2][0]);
             Console.WriteLine(users[1][1]);
@@ -236,11 +237,14 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         {
             DbConnect db = new DbConnect();
             // SELECT * FROM bddtest.users WHERE bddtest.users = "Ahab" LIMIT 1
-            List<string> found = db.SelectOne(); // Cherche "Ahab"
-            Assert.AreEqual(found[1], "Ahab");
-
-            List<string> notFound = db.SelectOne(); // Chercher "Jackie"
-            Assert.AreEqual(found, null);
+            Console.WriteLine("Test de Ahab");
+            User u = new User{Username = "Ahab"};
+            u = db.SelectOne(u, "Username"); // Cherche "Ahab"
+            Assert.AreEqual(u.Email, "Ahab@WhiteWhale.com");
+            Console.WriteLine("\nTest de Jackie");
+            u = new User { Username = "Jackie" };
+            u = db.SelectOne(u, "Username"); // Chercher "Jackie"
+            Assert.AreEqual(u.Email, null);
 
         }
 
@@ -255,7 +259,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             user.Email = @"Jacques.Test@mail.com";
             user.AddressId = 1;
             // INSERT INTO bddtest.users (name, age) VALUES ('Jacques', '78');
-            db.Insert(user); // Inserer "Jacques"
+            //db.Insert(user); // Inserer "Jacques"
             /*List<string> list = db.SelectOne();
             Assert.AreEqual(list[1], "Jacques");*/
         }
@@ -267,8 +271,8 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             // UPDATE bddtest.users SET name='Francois' WHERE name='Ishamel'
             //OU UPDATE bddtest.users SET name='Francois' WHERE idusers=2
             db.Update(); // Changer "Ishamel" en "Francois"
-            List<string> list = db.SelectOne();
-            Assert.AreEqual(list[1], "Francois");
+            string list = db.SelectOne("bddtest.users", "bddtest.users = 'Francois'");
+            Assert.AreEqual(list, "Francois");
         }
 
         [TestMethod]
@@ -277,7 +281,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             DbConnect db = new DbConnect();
             // DELETE FROM bddtest.users WHERE name="Ahab"
             db.Delete(); // Supprimer "Ahab"
-            List<string> list = db.SelectOne(); // select Ahab
+            string list = db.SelectOne("bddtest.users", "bddtest.users = 'Ahab'"); // select Ahab
             Assert.AreEqual(list, null);
         }
     }
