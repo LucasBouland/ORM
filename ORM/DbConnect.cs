@@ -131,7 +131,7 @@ namespace ORM
         /// <param name="wheres"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public T SelectOne<T>(T @class, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
+        public T SelectOne<T>(T @class, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
             TableSql table = NameConverter.GetTableSql(@class);
             string wherequery = "";
@@ -155,17 +155,18 @@ namespace ORM
                 }
             }
 
-            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
-            foreach (string select in selects)
-            {
-                selectquery = $"{selectquery}, {select.ToLower()}";
-            }
-
             //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
-            if (selects.Length == 0)
+            if (selects == null)
                 selectquery = "*";
             else
+            {
+                //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+                foreach (string select in selects)
+                {
+                    selectquery = $"{selectquery}, {select.ToLower()}";
+                }
                 selectquery = selectquery.Remove(0, 1);
+            }
 
             //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
             if (join.Item1 != default((string, string, string)).Item1)
@@ -223,7 +224,7 @@ namespace ORM
         /// <param name="wheres"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public string SelectOne(string classname, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
+        public string SelectOne(string classname, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
             string wherequery = "";
             string selectquery = "";
@@ -242,20 +243,21 @@ namespace ORM
                 }
             }
 
-            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
-            foreach (string select in selects)
-            {
-                selectquery = $"{selectquery}, {select.ToLower()}";
-            }
-
             //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
-            if (selects.Length == 0)
+            if (selects == null)
                 selectquery = "*";
             else
+            {
+                //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+                foreach (string select in selects)
+                {
+                    selectquery = $"{selectquery}, {select.ToLower()}";
+                }
                 selectquery = selectquery.Remove(0, 1);
+            }
 
             //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
-            if (join.Item1 != " ")
+            if (join.Item1 != default((string, string, string)).Item1)
             {
                 joinquery = $"JOIN {join.Item1} j ON j.{join.Item2} = f.{join.Item3}";
                 classname = $"{classname} f";
@@ -304,7 +306,7 @@ namespace ORM
         /// <param name="join"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public List<T> SelectAll<T>(T @class, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
+        public List<T> SelectAll<T>(T @class, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
             TableSql table = NameConverter.GetTableSql(@class);
             string wherequery = "";
@@ -329,17 +331,18 @@ namespace ORM
                 }
             }
 
-            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
-            foreach (string select in selects)
-            {
-                selectquery = $"{selectquery}, {select.ToLower()}";
-            }
-
             //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
-            if (selects.Length == 0)
+            if (selects == null)
                 selectquery = "*";
             else
+            {
+                //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+                foreach (string select in selects)
+                {
+                    selectquery = $"{selectquery}, {select.ToLower()}";
+                }
                 selectquery = selectquery.Remove(0, 1);
+            }
 
             //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
             if (join.Item1 != default((string, string, string)).Item1)
@@ -405,7 +408,7 @@ namespace ORM
         /// <param name="join"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public List<string> SelectAll(string classname, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
+        public List<string> SelectAll(string classname, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
             string wherequery = "";
             string selectquery = "";
@@ -425,17 +428,18 @@ namespace ORM
                 }
             }
 
-            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
-            foreach (string select in selects)
-            {
-                selectquery = $"{selectquery}, {select.ToLower()}";
-            }
-
             //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
-            if (selects.Length == 0)
+            if (selects == null)
                 selectquery = "*";
             else
+            {
+                //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+                foreach (string select in selects)
+                {
+                    selectquery = $"{selectquery}, {select.ToLower()}";
+                }
                 selectquery = selectquery.Remove(0, 1);
+            }
 
             //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
             if (join.Item1 != " ")

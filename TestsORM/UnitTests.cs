@@ -33,7 +33,7 @@ namespace TestsORM
         public Address(int Id)
         {
             this.Id = Id;
-            this.SelectOne(this,"Id");
+            this.SelectOne(this,null,"Id");
         }
     }
     #endregion
@@ -227,47 +227,55 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             Console.WriteLine(users[1].Email);
             Assert.AreEqual(users[0].Username, "Ahab");
             Assert.AreEqual(users[1].Username, "Ishmael");
-            /*
+            
             // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
             List<string> parameters = new List<string>();
             parameters.Add("45");
-            List<string>[] list = db.Select(u.age, parameters);
+            List<string> selects = new List<string>();
+            selects.Add("age");
+            List<string>[] list = db.SelectAll(u,selects, parameters);
             // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
             parameters.Clear();
             parameters.Add("34");
 
-            List<string>[] none = db.Select(u.age, parameters); // Chercher "Jackie"
+            List<string>[] none = db.SelectAll(u.age, parameters); // Chercher "Jackie"
             Assert.AreEqual(none, null);
-            */
+            
         }
 
         [TestMethod]
         public void SelectOneTest()
         {
             DbConnect db = new DbConnect();
+
             Console.WriteLine("Test de Janine");
-            string[] reponse = db.SelectOne("user", "username='janine'", " ", default((string,string,string)),"username","email").Split(',');
+            List<string> selects = new List<string>();
+            selects.Add("username");
+            selects.Add("email");
+            string[] reponse = db.SelectOne("user",selects, "username='janine'", " ", default((string,string,string))).Split(',');
             Assert.AreEqual(reponse[0], "Janine");
             Assert.AreEqual(reponse[1], "Janine.D@aol.fr");
             
             Console.WriteLine("\nTest de Ahab");
             User u = new User{Username = "Ahab"};
-            u = db.SelectOne(u, "Username"); // Cherche "Ahab"
+            u = db.SelectOne(u,null, "Username"); // Cherche "Ahab"
             Assert.AreEqual(u.Email, "Ahab@WhiteWhale.com");
 
             Console.WriteLine("\nTest de Jackie");
             u = new User { Username = "Jackie" };
-            u = db.SelectOne(u, "Username"); // Chercher "Jackie"
+            u = db.SelectOne(u,null, "Username"); // Chercher "Jackie"
             Assert.AreEqual(u.Email, null);
 
             Console.WriteLine("\nTest de addresse de Janine");
             u = new User { Username = "Janine" };
-            Address address = new Address(db.SelectOne(u, "Username"," ", default((string, string, string)), "id").Id.GetValueOrDefault());
+            selects = new List<string>();
+            selects.Add("id");
+            Address address = new Address(db.SelectOne(u,selects, "Username"," ", default((string, string, string))).Id.GetValueOrDefault());
             Assert.AreEqual(address.Street, "15 rue José Bové");
 
             Console.WriteLine("\nTest de qui est à l'adresse");
             address = new Address(2);
-            u = db.SelectOne(u,null," ", (NameConverter.GetTableSql(address).TableName,"id","address_id"));
+            u = db.SelectOne(u, null, null, " ", (NameConverter.GetTableSql(address).TableName, "id", "address_id"));
             Assert.AreEqual(u.Email, "Janine.D@aol.fr");
         }
 
