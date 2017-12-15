@@ -22,6 +22,11 @@ namespace ORM
         private string database;
         private string uid;
         private string password;
+        private string query;
+        private string SELECT;
+        private string FROM;
+        private string JOIN;
+        private string WHERE;
 
         public DbConnect()
         {
@@ -482,6 +487,7 @@ namespace ORM
             }
             throw new Exception("No Connection");
         }
+
     }
     #endregion
 

@@ -226,21 +226,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             Console.WriteLine(users[0].Email);
             Console.WriteLine(users[1].Email);
             Assert.AreEqual(users[0].Username, "Ahab");
-            Assert.AreEqual(users[1].Username, "Ishmael");
-            
-            // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
-            List<string> parameters = new List<string>();
-            parameters.Add("45");
-            List<string> selects = new List<string>();
-            selects.Add("age");
-            List<string>[] list = db.SelectAll(u,selects, parameters);
-            // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
-            parameters.Clear();
-            parameters.Add("34");
-
-            List<string>[] none = db.SelectAll(u.age, parameters); // Chercher "Jackie"
-            Assert.AreEqual(none, null);
-            
+            Assert.AreEqual(users[1].Username, "Ishmael");            
         }
 
         [TestMethod]
