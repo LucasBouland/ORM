@@ -116,21 +116,41 @@ namespace ORM
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
-            else
-            {
-                Console.Write("lmao");
-            }
         }
         
-        public void Update()
+        public void UpdateOne<T>(T classToUpdate, T modelClass)
         {
-            string query = "UPDATE users SET name='Joe', age='22' WHERE name='joey'";
+            TableSql table= NameConverter.GetTableSql(classToUpdate);
+
+            string setValueString = "";
+            string whereCondition = "";
+            int i = 0;
+
+            IList<PropertyInfo> props = new List<PropertyInfo>(classToUpdate.GetType().GetProperties());
+
+            foreach (PropertyInfo prop in props)
+            {
+                setValueString += table.ColumnList[i] + " = " + "'" + prop.GetValue(classToUpdate) + "',";
+                i++;
+            }
+
+            setValueString = setValueString.Remove(setValueString.Length - 1);
+
+            i = 0;
+
+            foreach (PropertyInfo prop in props)
+            {
+                whereCondition += table.ColumnList[i] + " = " + "'" + prop.GetValue(modelClass) + "'" + " AND ";
+                i++;
+            }
+
+            whereCondition = whereCondition.Remove(whereCondition.Length - 5);
+
+            string query = $"UPDATE {table.TableName} SET {setValueString} WHERE {whereCondition}";
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.CommandText = query;
-                cmd.Connection = connection;
+                MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }

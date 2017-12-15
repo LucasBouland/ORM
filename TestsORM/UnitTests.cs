@@ -264,11 +264,25 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         public void UpdateTest()
         {
             DbConnect db = new DbConnect();
-            // UPDATE bddtest.users SET name='Francois' WHERE name='Ishamel'
-            //OU UPDATE bddtest.users SET name='Francois' WHERE idusers=2
-            db.Update(); // Changer "Ishamel" en "Francois"
-            List<string> list = db.SelectOne();
-            Assert.AreEqual(list[1], "Francois");
+
+            User user = new User();
+            user.Id = 3;
+            user.Username = "Janine";
+            user.Password = "14/12/72";
+            user.Email = @"Janine.d@aol.fr";
+            user.AddressId = 2;
+
+            User user2 = new User();
+            user2.Id = 3;
+            user2.Username = "Janone";
+            user2.Password = "14/13/72";
+            user2.Email = @"Janone@mail.com";
+            user2.AddressId = 3;
+
+            db.UpdateOne(user2, user);
+
+            //List<string> list = db.SelectOne();
+            //Assert.AreEqual(list[1], "Francois");
         }
 
         [TestMethod]
