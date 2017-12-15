@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace TestsORM
 {
+
     #region test classes
     // Classe representant la table user
     public class User
@@ -22,7 +23,7 @@ namespace TestsORM
         public int AddressId { get; set; }
     }
     // Classe representant la table Address
-    public class Address : DbConnect
+    public class Address 
     {
         public int Id { get; set; }
         public string Street { get; set; }
@@ -33,7 +34,14 @@ namespace TestsORM
         public Address(int Id)
         {
             this.Id = Id;
-            this.SelectOne(this,null,"Id");
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
+            db.SelectOne(this,null,"Id");
         }
     }
     #endregion
@@ -250,13 +258,20 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
     [TestClass]
     public class CommandTest
     {
+
         // TODO : Affiner tests avec le mapping demandé (II.1)
 
         // TODO : Mettre test prenant en compte les opérateurs ainsi que le AND / OR
         [TestMethod]
         public void SelectAllTest()
         {
-            DbConnect db = new DbConnect(DatabaseType.MySql, "SERVER=\"localhost\";DATABASE=\bddtest\";UID=\"root\";PASSWORD=\"root\"");
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             User u = new User();
 
             List<User> user = db.SelectAll(u);
@@ -278,8 +293,13 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectOneTest()
         {
-
-            DbConnect db = new DbConnect();
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
 
 
             Console.WriteLine("Test de Janine");
@@ -316,13 +336,13 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void InsertTest()
         {
-            string server = @"localhost\SQLEXPRESS";
+            string server = "localhost";
             string database = "bddtest";
             string uid = "root";
             string password = "root";
             string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";Trusted_Connection=True;" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             User user = new User();
             user.Id = 0;
             user.Username = "Jacques";
@@ -339,8 +359,13 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void UpdateTest()
         {
-
-            DbConnect db = new DbConnect();
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             
             User user = new User();
             user.Id = 3;
@@ -363,7 +388,13 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void DeleteTest()
         {
-            DbConnect db = new DbConnect();
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
 
             User user = new User();
             user.Id = 4;
