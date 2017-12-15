@@ -31,18 +31,6 @@ namespace TestsORM
         public string Country { get; set; }
         public string Zipcode { get; set; }
 
-        public Address(int Id)
-        {
-            this.Id = Id;
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
-            db.SelectOne(this,null,"Id");
-        }
     }
     #endregion
 
@@ -320,17 +308,6 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             u = db.SelectOne(u,null, "Username"); // Chercher "Jackie"
             Assert.AreEqual(u.Email, null);
 
-            Console.WriteLine("\nTest de addresse de Janine");
-            u = new User { Username = "Janine" };
-            selects = new List<string>();
-            selects.Add("id");
-            Address address = new Address(db.SelectOne(u,selects, "Username"," ", default((string, string, string))).Id.GetValueOrDefault());
-            Assert.AreEqual(address.Street, "15 rue José Bové");
-
-            Console.WriteLine("\nTest de qui est à l'adresse");
-            address = new Address(2);
-            u = db.SelectOne(u, null, null, " ", (NameConverter.GetTableSql(address).TableName, "id", "address_id"));
-            Assert.AreEqual(u.Email, "Janine.D@aol.fr");
         }
 
         [TestMethod]
