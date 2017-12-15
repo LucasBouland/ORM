@@ -40,7 +40,7 @@ namespace ORM
                     table.TableName = ToSql(typeof(T).Name);
                     break;
                 case DatabaseType.SqlServer:
-                    table.TableName = "[dbo." + ToSql(typeof(T).Name) + "]";
+                    table.TableName = "[dbo].[" + ToSql(typeof(T).Name) + "]";
                     break;
             }
 
