@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 using MySql.Data.MySqlClient;
 using Npgsql;
-using System.Reflection;
 
 namespace ORM
 {
@@ -23,11 +23,18 @@ namespace ORM
         private string uid;
         private string password;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DbConnect()
         {
             Initialize();
         }
+
         // TODO : Faire passer les champs via un fichier xml type settings.xml
+        /// <summary>
+        /// 
+        /// </summary>
         private void Initialize()
         {
             server = "localhost";
@@ -42,6 +49,10 @@ namespace ORM
         }
 
         // TODO : expliciter la gestion des erreurs
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private bool OpenConnection()
         {
             try
@@ -66,6 +77,10 @@ namespace ORM
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private bool CloseConnection()
         {
             try
@@ -80,9 +95,41 @@ namespace ORM
             }
         }
 
-        public void Insert()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="classToInsert"></param>
+        /// <param name="ignoredColumnList"></param>
+        public void Insert<T>(T classToInsert, List<string> ignoredColumnList = null)
         {
-            string query = "INSERT INTO users (name, age) VALUES ('joey', '18'), ('Jamel', '45')";
+            if (ignoredColumnList == null)
+            {
+                ignoredColumnList = new List<string>() { "Id" };
+            }
+            TableSql table = NameConverter.GetTableSql(classToInsert);
+            string columns = string.Join(",", table.ColumnList.ToArray());
+            columns = columns.Replace("id,", string.Empty); // on enleve l'id en dur pour l'instant
+            Type myType = classToInsert.GetType();
+            IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+            string values = "";
+            foreach (PropertyInfo prop in props)
+            {
+                System.Console.WriteLine(prop.Name);
+                object propValue = prop.GetValue(classToInsert, null);
+                // on verifie si la propieté fait partie des champs ignorés
+                if (!ignoredColumnList.Any(o => string.Equals(prop.Name, o, StringComparison.OrdinalIgnoreCase)))
+                {
+                    values += '"';
+                    values += propValue;
+                    values += '"' + ",";
+                }
+            }
+            System.Console.WriteLine(values);
+            values = values.Remove(values.Length - 1);
+
+            string query = $"INSERT INTO {table.TableName} ({columns}) VALUES ({@values});";
+            System.Console.WriteLine(query);
 
             if (this.OpenConnection() == true)
             {
@@ -90,29 +137,106 @@ namespace ORM
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
-            else
-            {
-                Console.Write("lmao");
-            }
         }
-
-        public void Update()
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="classToUpdate"></param>
+        /// <param name="modelClass"></param>
+        public void UpdateOne<T>(T classToUpdate, T modelClass)
         {
-            string query = "UPDATE users SET name='Joe', age='22' WHERE name='joey'";
+            TableSql table= NameConverter.GetTableSql(classToUpdate);
+
+            string setValueString = "";
+            string whereCondition = "";
+            int i = 0;
+
+            IList<PropertyInfo> props = new List<PropertyInfo>(classToUpdate.GetType().GetProperties());
+
+            foreach (PropertyInfo prop in props)
+            {
+                setValueString += table.ColumnList[i] + " = " + "'" + prop.GetValue(classToUpdate) + "',";
+                i++;
+            }
+
+            setValueString = setValueString.Remove(setValueString.Length - 1);
+
+            i = 0;
+
+            foreach (PropertyInfo prop in props)
+            {
+                whereCondition += table.ColumnList[i] + " = " + "'" + prop.GetValue(modelClass) + "'" + " AND ";
+                i++;
+            }
+
+            whereCondition = whereCondition.Remove(whereCondition.Length - 5);
+
+            string query = $"UPDATE {table.TableName} SET {setValueString} WHERE {whereCondition}";
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.CommandText = query;
-                cmd.Connection = connection;
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="classToDelete"></param>
+        public void Delete<T>(T classToDelete)
+        {
+            TableSql table = NameConverter.GetTableSql(classToDelete);
+            string whereCondition = "";
+            int i = 0;
+
+            IList<PropertyInfo> props = new List<PropertyInfo>(classToDelete.GetType().GetProperties());
+
+            foreach (PropertyInfo prop in props)
+            {
+                whereCondition += table.ColumnList[i] + " = " + "'" + prop.GetValue(classToDelete) + "'" + " AND ";
+                i++;
+            }
+
+            whereCondition = whereCondition.Remove(whereCondition.Length - 5);
+
+            string query = $"DELETE FROM {table.TableName} WHERE {whereCondition}";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
         }
 
-        public void Delete()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listClassToDelete"></param>
+        public void Delete<T>(List<T> listClassToDelete)
         {
-            string query = "DELETE FROM users WHERE name='Joe'";
+            foreach (T classToDelete in listClassToDelete)
+            {
+                Delete(classToDelete);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="classToDelete"></param>
+        public void DeleteAll<T>(T classToDelete)
+        {
+            TableSql table = NameConverter.GetTableSql(classToDelete);
+
+            string query = $"DELETE FROM {table.TableName}";
 
             if (this.OpenConnection() == true)
             {

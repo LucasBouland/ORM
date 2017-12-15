@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ORM;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Reflection;
 
 namespace TestsORM
 {
@@ -220,6 +219,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             Assert.AreEqual(user[0].Email, "Ahab@WhiteWhale.com");
             Assert.AreEqual(user[2].Email, "Janine.D@aol.fr");
             // SELECT * FROM Users
+
             List<User> users = db.SelectAll(new User());
             Console.WriteLine(users[0].Username);
             Console.WriteLine(users[1].Username);
@@ -276,30 +276,50 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             user.Email = @"Jacques.Test@mail.com";
             user.AddressId = 1;
             // INSERT INTO bddtest.users (name, age) VALUES ('Jacques', '78');
-            //db.Insert(user); // Inserer "Jacques"
-            /*List<string> list = db.SelectOne();
-            Assert.AreEqual(list[1], "Jacques");*/
+            db.Insert(user); // Inserer "Jacques"
+            User u = new User { Username = "Jacques" };
+            u = db.SelectOne(u,null,"Username");
+            Assert.AreEqual(u.Email, "Jacques.Test@mail.com");
         }
 
         [TestMethod]
         public void UpdateTest()
         {
             DbConnect db = new DbConnect();
-            // UPDATE bddtest.users SET name='Francois' WHERE name='Ishamel'
-            //OU UPDATE bddtest.users SET name='Francois' WHERE idusers=2
-            db.Update(); // Changer "Ishamel" en "Francois"
-            /*string list = db.SelectOne("bddtest.users", "bddtest.users = 'Francois'");
-            Assert.AreEqual(list, "Francois");*/
+            
+            User user = new User();
+            user.Id = 3;
+            user.Username = "Janine";
+            user.Password = "14/12/72";
+            user.Email = @"Janine.d@aol.fr";
+            user.AddressId = 2;
+
+            User user2 = new User();
+            user2.Id = 3;
+            user2.Username = "Janone";
+            user2.Password = "14/13/72";
+            user2.Email = @"Janone@mail.com";
+            user2.AddressId = 3;
+
+            db.UpdateOne(user2, user);
         }
 
         [TestMethod]
         public void DeleteTest()
         {
             DbConnect db = new DbConnect();
-            // DELETE FROM bddtest.users WHERE name="Ahab"
-            db.Delete(); // Supprimer "Ahab"
-            //string list = db.SelectOne("bddtest.users", "bddtest.users = 'Ahab'"); // select Ahab
-            //Assert.AreEqual(list, null);
+
+            User user = new User();
+            user.Id = 4;
+            user.Username = "Jacques";
+            user.Password = "Test";
+            user.Email = @"Jacques.Test@mail.com";
+            user.AddressId = 1;
+
+            db.Delete(user);
+            User u = new User { Username = "Jacques" };
+            u = db.SelectOne(u, null, "Username");
+            Assert.AreEqual(u.Email, null);
         }
     }
 }
