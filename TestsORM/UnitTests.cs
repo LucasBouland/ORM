@@ -301,6 +301,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             //db.DeleteAll(new User());
             //List<string> list = db.SelectOne();
             //Assert.AreEqual(list, null);
+
         }
     }
 }
