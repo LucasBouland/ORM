@@ -34,13 +34,13 @@ namespace ORM
             switch (type)
             {
                 case DatabaseType.Postgres:
-                    table.TableName = table.ShemaName + "." + ToSql(typeof(T).Name);
+                    table.TableName = "public." + ToSql(typeof(T).Name);
                     break;
                 case DatabaseType.MySql:
                     table.TableName = ToSql(typeof(T).Name);
                     break;
                 case DatabaseType.SqlServer:
-                    table.TableName = ToSql(typeof(T).Name);
+                    table.TableName = "[dbo." + ToSql(typeof(T).Name) + "]";
                     break;
             }
 

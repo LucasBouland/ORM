@@ -165,9 +165,9 @@ namespace ORM
                 // on verifie si la propieté fait partie des champs ignorés
                 if (!ignoredColumnList.Any(o => string.Equals(prop.Name, o, StringComparison.OrdinalIgnoreCase)))
                 {
-                    values += '"';
+                    values += "'";
                     values += propValue;
-                    values += '"' + ",";
+                    values += "'" + ",";
                 }
             }
             System.Console.WriteLine(values);
