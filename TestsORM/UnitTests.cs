@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace TestsORM
 {
-   
+
     #region test classes
     // Classe representant la table user
     public class User
@@ -23,7 +23,7 @@ namespace TestsORM
         public int AddressId { get; set; }
     }
     // Classe representant la table Address
-    public class Address 
+    public class Address
     {
         public int Id { get; set; }
         public string Street { get; set; }
@@ -76,6 +76,7 @@ namespace TestsORM
         }
 
     }
+
     [TestClass]
     public class SetupTests
     {
@@ -243,15 +244,16 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
 
     }
 
-    [TestClass]
-    public class CommandTest
-    {
-        static string server { get; set; } = "localhost"; 
-        static string database = "bddtest";
-        static string uid = "root";
-        static string password = "";
-        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" + database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+    #region MySql
 
+    [TestClass]
+    public class SqlServerCommandTest
+    {
+        static string server { get; set; } = @"localhost\SQLEXPRESS";
+        static string database = "bddtest";
+        static string uid = "test";
+        static string password = "root";
+        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" + database + ";Trusted_Connection=True;" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
         // TODO : Affiner tests avec le mapping demandé (II.1)
 
         // TODO : Mettre test prenant en compte les opérateurs ainsi que le AND / OR
@@ -259,11 +261,11 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         public void SelectAllTest()
         {
 
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
             User u = new User();
 
             List<User> user = db.SelectAll(u);
-            Assert.AreEqual(user.Count,3);
+            Assert.AreEqual(user.Count, 3);
             Assert.AreEqual(user[0].Email, "Ahab@WhiteWhale.com");
             Assert.AreEqual(user[2].Email, "Janine.D@aol.fr");
             // SELECT * FROM Users
@@ -274,7 +276,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             Console.WriteLine(users[0].Email);
             Console.WriteLine(users[1].Email);
             Assert.AreEqual(users[0].Username, "Ahab");
-            Assert.AreEqual(users[1].Username, "Ishmael");            
+            Assert.AreEqual(users[1].Username, "Ishmael");
 
         }
 
@@ -282,24 +284,24 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         public void SelectOneTest()
         {
 
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
-            
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
             Console.WriteLine("Test de Janine");
             List<string> selects = new List<string>();
             selects.Add("username");
             selects.Add("email");
-            string[] reponse = db.SelectOne("user",selects, "username='janine'", " ", default((string,string,string))).Split(',');
+            string[] reponse = db.SelectOne("user", selects, "username='janine'", " ", default((string, string, string))).Split(',');
             Assert.AreEqual(reponse[0], "Janine");
             Assert.AreEqual(reponse[1], "Janine.D@aol.fr");
-            
+
             Console.WriteLine("\nTest de Ahab");
-            User u = new User{Username = "Ahab"};
-            u = db.SelectOne(u,null, "Username"); // Cherche "Ahab"
+            User u = new User { Username = "Ahab" };
+            u = db.SelectOne(u, null, "Username"); // Cherche "Ahab"
             Assert.AreEqual(u.Email, "Ahab@WhiteWhale.com");
 
             Console.WriteLine("\nTest de Jackie");
             u = new User { Username = "Jackie" };
-            u = db.SelectOne(u,null, "Username"); // Chercher "Jackie"
+            u = db.SelectOne(u, null, "Username"); // Chercher "Jackie"
             Assert.AreEqual(u.Email, null);
 
         }
@@ -307,7 +309,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void InsertTest()
         {
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
             User user = new User();
             user.Id = 0;
             user.Username = "Jacques";
@@ -317,15 +319,15 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             // INSERT INTO bddtest.users (name, age) VALUES ('Jacques', '78');
             db.Insert(user); // Inserer "Jacques"
             User u = new User { Username = "Jacques" };
-            u = db.SelectOne(u,null,"Username");
-            Assert.AreEqual(u.Email, "Jacques.Test@mail.com");
+            u = db.SelectOne(u, null, "Username");
+            Assert.AreEqual("Jacques.Test@mail.com", u.Email);
         }
 
         [TestMethod]
         public void UpdateTest()
         {
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
-            
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
             User user = new User();
             user.Id = 3;
             user.Username = "Janine";
@@ -347,7 +349,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void DeleteTest()
         {
-            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
 
             User user = new User();
             user.Id = 1;
@@ -357,12 +359,138 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             user.AddressId = 1;
 
             db.Delete(user);
-            User u = new User { Username = "Jacques" };
+            User u = new User { Username = "Ahab" };
             u = db.SelectOne(u, null, "Username");
-            Assert.AreEqual(u.Email, null);
+            Assert.AreEqual(null, u.Email);
 
         }
     }
+    #endregion
+
+#endregion
+    #region SqlServer
+
+    [TestClass]
+    public class MySQLCommandTest
+    {
+        static string server { get; set; } = @"localhost\SQLEXPRESS";
+        static string database = "bddtest";
+        static string uid = "test";
+        static string password = "root";
+        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" + database + ";Trusted_Connection=True;" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+        // TODO : Affiner tests avec le mapping demandé (II.1)
+
+        // TODO : Mettre test prenant en compte les opérateurs ainsi que le AND / OR
+        [TestMethod]
+        public void SelectAllTest()
+        {
+
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+            User u = new User();
+
+            List<User> user = db.SelectAll(u);
+            Assert.AreEqual(user.Count, 3);
+            Assert.AreEqual(user[0].Email, "Ahab@WhiteWhale.com");
+            Assert.AreEqual(user[2].Email, "Janine.D@aol.fr");
+            // SELECT * FROM Users
+
+            List<User> users = db.SelectAll(new User());
+            Console.WriteLine(users[0].Username);
+            Console.WriteLine(users[1].Username);
+            Console.WriteLine(users[0].Email);
+            Console.WriteLine(users[1].Email);
+            Assert.AreEqual(users[0].Username, "Ahab");
+            Assert.AreEqual(users[1].Username, "Ishmael");
+
+        }
+
+        [TestMethod]
+        public void SelectOneTest()
+        {
+
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
+            Console.WriteLine("Test de Janine");
+            List<string> selects = new List<string>();
+            selects.Add("username");
+            selects.Add("email");
+            string[] reponse = db.SelectOne("user", selects, "username='janine'", " ", default((string, string, string))).Split(',');
+            Assert.AreEqual(reponse[0], "Janine");
+            Assert.AreEqual(reponse[1], "Janine.D@aol.fr");
+
+            Console.WriteLine("\nTest de Ahab");
+            User u = new User { Username = "Ahab" };
+            u = db.SelectOne(u, null, "Username"); // Cherche "Ahab"
+            Assert.AreEqual(u.Email, "Ahab@WhiteWhale.com");
+
+            Console.WriteLine("\nTest de Jackie");
+            u = new User { Username = "Jackie" };
+            u = db.SelectOne(u, null, "Username"); // Chercher "Jackie"
+            Assert.AreEqual(u.Email, null);
+
+        }
+
+        [TestMethod]
+        public void InsertTest()
+        {
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+            User user = new User();
+            user.Id = 0;
+            user.Username = "Jacques";
+            user.Password = "Test";
+            user.Email = @"Jacques.Test@mail.com";
+            user.AddressId = 1;
+            // INSERT INTO bddtest.users (name, age) VALUES ('Jacques', '78');
+            db.Insert(user); // Inserer "Jacques"
+            User u = new User { Username = "Jacques" };
+            u = db.SelectOne(u, null, "Username");
+            Assert.AreEqual("Jacques.Test@mail.com", u.Email);
+        }
+
+        [TestMethod]
+        public void UpdateTest()
+        {
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
+            User user = new User();
+            user.Id = 3;
+            user.Username = "Janine";
+            user.Password = "14/12/72";
+            user.Email = @"Janine.d@aol.fr";
+            user.AddressId = 2;
+
+            User user2 = new User();
+            user2.Id = 3;
+            user2.Username = "Janone";
+            user2.Password = "14/13/72";
+            user2.Email = @"Janone@mail.com";
+            user2.AddressId = 3;
+
+            db.UpdateOne(user2, user);
+
+        }
+
+        [TestMethod]
+        public void DeleteTest()
+        {
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
+            User user = new User();
+            user.Id = 1;
+            user.Username = "Ahab";
+            user.Password = "hunter2";
+            user.Email = @"Ahab@WhiteWhale.com";
+            user.AddressId = 1;
+
+            db.Delete(user);
+            User u = new User { Username = "Ahab" };
+            u = db.SelectOne(u, null, "Username");
+            Assert.AreEqual(null, u.Email);
+
+        }
+    }
+    #endregion
+
 }
 
 
