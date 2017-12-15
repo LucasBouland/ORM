@@ -215,15 +215,18 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         {
             DbConnect db = new DbConnect();
             User u = new User();
-            Console.WriteLine(typeof(User));
+            List<User> user = db.SelectAll(u);
+            Assert.AreEqual(user.Count,3);
+            Assert.AreEqual(user[0].Email, "Ahab@WhiteWhale.com");
+            Assert.AreEqual(user[2].Email, "Janine.D@aol.fr");
             // SELECT * FROM Users
-            //List<User> users = db.Select(new User());
-            /*Console.WriteLine(users[1][0]);
-            Console.WriteLine(users[2][0]);
-            Console.WriteLine(users[1][1]);
-            Console.WriteLine(users[2][1]);
-            Assert.AreEqual(users[1][0], "Ahab");
-            Assert.AreEqual(users[2][0], "Ishmael");*/
+            List<User> users = db.SelectAll(new User());
+            Console.WriteLine(users[0].Username);
+            Console.WriteLine(users[1].Username);
+            Console.WriteLine(users[0].Email);
+            Console.WriteLine(users[1].Email);
+            Assert.AreEqual(users[0].Username, "Ahab");
+            Assert.AreEqual(users[1].Username, "Ishmael");
             /*
             // SELECT age FROM bddtest.users WHERE bddtest.users.age = 45
             List<string> parameters = new List<string>();

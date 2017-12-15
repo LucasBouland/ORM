@@ -131,7 +131,7 @@ namespace ORM
         /// <param name="wheres"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public T SelectOne<T>(T @class, string correspondance = null, string wheres = " ", (string, string, string) join = default((string,string,string)), params string[] selects)
+        public T SelectOne<T>(T @class, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
         {
             TableSql table = NameConverter.GetTableSql(@class);
             string wherequery = "";
@@ -166,7 +166,7 @@ namespace ORM
                 selectquery = "*";
             else
                 selectquery = selectquery.Remove(0, 1);
-            
+
             //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
             if (join.Item1 != default((string, string, string)).Item1)
             {
@@ -203,7 +203,7 @@ namespace ORM
                         }
                         catch (System.IndexOutOfRangeException e)
                         {
-                            
+
                         }
                     }
                 }
@@ -223,7 +223,7 @@ namespace ORM
         /// <param name="wheres"></param>
         /// <param name="selects"></param>
         /// <returns></returns>
-        public string SelectOne(string classname, string correspondance = null, string wheres = " ",(string, string, string) join = default((string,string,string)), params string[] selects)
+        public string SelectOne(string classname, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
         {
             string wherequery = "";
             string selectquery = "";
@@ -275,17 +275,17 @@ namespace ORM
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 MySqlDataReader dataReader = cmd.ExecuteReader();
                 string retour = "";
-                
+
                 //lit l'object de lecture
                 while (dataReader.Read())
                 {
                     //recupere la valeur de chaque champs de l'object de lecture
-                    for(int i = 0; i < dataReader.FieldCount; i++)
+                    for (int i = 0; i < dataReader.FieldCount; i++)
                     {
                         retour = $"{retour},{dataReader.GetValue(i)}";
                     }
                 }
-                retour = retour.Remove(0,1);
+                retour = retour.Remove(0, 1);
                 //Ferme la connection et l'objet de lecture
                 dataReader.Close();
                 this.CloseConnection();
@@ -293,34 +293,190 @@ namespace ORM
             }
             throw new Exception("No Connection");
         }
-        
-        public List<string>[] Select()
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="class"></param>
+        /// <param name="correspondance"></param>
+        /// <param name="wheres"></param>
+        /// <param name="join"></param>
+        /// <param name="selects"></param>
+        /// <returns></returns>
+        public List<T> SelectAll<T>(T @class, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
         {
-            string query = "SELECT * FROM users";
+            TableSql table = NameConverter.GetTableSql(@class);
+            string wherequery = "";
+            string selectquery = "";
+            string joinquery = "";
+            string tablenamequery = table.TableName;
+            List<T> list = new List<T>();
 
-            List<string>[] list = new List<string>[3];
-            list[0] = new List<string>();
-            list[1] = new List<string>();
-            list[2] = new List<string>();
+            //Vérifie si un where doit être fait dans la requête par rapport à un champ nommé en c# "correspondance" de la table
+            if (correspondance != null)
+            {
+                try
+                {
+                    PropertyInfo corresp = @class.GetType().GetProperty(correspondance);
+                    object propvalue = corresp.GetValue(@class);
+                    string propname = corresp.Name.ToLower();
+                    wherequery = $"WHERE {propname}='{propvalue}'";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
 
+            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+            foreach (string select in selects)
+            {
+                selectquery = $"{selectquery}, {select.ToLower()}";
+            }
+
+            //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
+            if (selects.Length == 0)
+                selectquery = "*";
+            else
+                selectquery = selectquery.Remove(0, 1);
+
+            //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
+            if (join.Item1 != default((string, string, string)).Item1)
+            {
+                joinquery = $"JOIN {join.Item1} j ON j.{join.Item2} = f.{join.Item3}";
+                tablenamequery = $"{tablenamequery} f";
+            }
+
+            //Prépare la requête de base (avec les selects, la table et la correspondance si elle existe)
+            string query = $"SELECT {selectquery} FROM {tablenamequery} {joinquery} {wherequery}";
+
+
+            //Si l'utilisateur ajoute des wheres, les ajoutes à la requête
+            query = $"{query} {wheres}";
+
+            Console.WriteLine("query = " + query);
             if (this.OpenConnection() == true)
             {
+                //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 MySqlDataReader dataReader = cmd.ExecuteReader();
+                PropertyInfo[] properties = @class.GetType().GetProperties();
+                int compteur = 0;
+                //lit et parcours les propietes de la classe a completer
                 while (dataReader.Read())
                 {
-                    list[0].Add(dataReader["idusers"] + "");
-                    list[1].Add(dataReader["name"] + "");
-                    list[2].Add(dataReader["age"] + "");
+                    foreach (PropertyInfo property in properties)
+                    {
+                        for (int i = compteur; i < compteur + properties.Length; i++)
+                        {
+                            if (property.Name.ToLower() == dataReader.GetName(i% dataReader.FieldCount))
+                            {
+                                property.SetValue(@class, dataReader[i% dataReader.FieldCount]);
+                            }
+                        }
+                    }
+                    compteur += properties.Length;
+                    T t = (T) Activator.CreateInstance(typeof(T));
+                    list.Add(t);
+                    list.FindLastIndex(delegate (T @object)
+                    {
+                        foreach (PropertyInfo property  in @object.GetType().GetProperties())
+                        {
+                            property.SetValue(@object, @class.GetType().GetProperty(property.Name).GetValue(@class));
+                        }
+                        return true;
+                    });
                 }
+                //Ferme la connection et l'objet de lecture
                 dataReader.Close();
                 this.CloseConnection();
                 return list;
             }
-            else
+            throw new Exception("No Connection");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="classname"></param>
+        /// <param name="correspondance"></param>
+        /// <param name="wheres"></param>
+        /// <param name="join"></param>
+        /// <param name="selects"></param>
+        /// <returns></returns>
+        public List<string> SelectAll(string classname, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)), params string[] selects)
+        {
+            string wherequery = "";
+            string selectquery = "";
+            string joinquery = "";
+            List<string> list = new List<string>();
+
+            //Defini n where de base si l'utilisateur en a précisé un
+            if (correspondance != null)
             {
+                try
+                {
+                    wherequery = $"WHERE {correspondance}";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+
+            //Si l'utilisateur ajoute des champs à select, on les définis pour la requête
+            foreach (string select in selects)
+            {
+                selectquery = $"{selectquery}, {select.ToLower()}";
+            }
+
+            //Si l'utilisateur n'ajoute aucun champs à select, on defini un select de base sur all (*)
+            if (selects.Length == 0)
+                selectquery = "*";
+            else
+                selectquery = selectquery.Remove(0, 1);
+
+            //Si l'utilisateur ajoute un join, le prepare pour l'ajouter a la requete
+            if (join.Item1 != " ")
+            {
+                joinquery = $"JOIN {join.Item1} j ON j.{join.Item2} = f.{join.Item3}";
+                classname = $"{classname} f";
+            }
+
+            //Prépare la requête de base (avec les selects, la table et la correspondance si elle existe)
+            string query = $"SELECT {selectquery} FROM {classname} {wherequery}";
+
+
+            //Si l'utilisateur ajoute des wheres, les ajoutes à la requête
+            query = $"{query} {wheres}";
+
+            Console.WriteLine("query = " + query);
+            if (this.OpenConnection() == true)
+            {
+                //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                //lit l'object de lecture
+                while (dataReader.Read())
+                {
+
+                    string retour = "";
+                    //recupere la valeur de chaque champs de l'object de lecture
+                    for (int i = 0; i < dataReader.FieldCount; i++)
+                    {
+                        retour = $"{retour},{dataReader.GetValue(i)}";
+                    }
+                    retour = retour.Remove(0, 1);
+                    list.Add(retour);
+                }
+                //Ferme la connection et l'objet de lecture
+                dataReader.Close();
+                this.CloseConnection();
                 return list;
             }
+            throw new Exception("No Connection");
         }
     }
     #endregion
