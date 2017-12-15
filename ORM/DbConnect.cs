@@ -26,6 +26,8 @@ namespace ORM
     {
         private DbConnection connection;
 
+        public DatabaseType type;
+
         #region Get Database Class
         /// <summary>
         /// Retourne une connexion du type donné en dbType
@@ -75,6 +77,7 @@ namespace ORM
         public DbConnect(DatabaseType dbType, string connectionString)
         {
             Initialize(dbType, connectionString);
+            type = dbType;
         }
 
         private void Initialize(DatabaseType dbType, string connectionString)
@@ -149,7 +152,7 @@ namespace ORM
             {
                 ignoredColumnList = new List<string>() { "Id" };
             }
-            TableSql table = NameConverter.GetTableSql(classToInsert);
+            TableSql table = NameConverter.GetTableSql(classToInsert, type);
             string columns = string.Join(",", table.ColumnList.ToArray());
             columns = columns.Replace("id,", string.Empty); // on enleve l'id en dur pour l'instant
             Type myType = classToInsert.GetType();
@@ -189,7 +192,7 @@ namespace ORM
         /// <param name="modelClass"></param>
         public void UpdateOne<T>(T classToUpdate, T modelClass)
         {
-            TableSql table= NameConverter.GetTableSql(classToUpdate);
+            TableSql table= NameConverter.GetTableSql(classToUpdate, type);
 
             string setValueString = "";
             string whereCondition = "";
@@ -232,7 +235,7 @@ namespace ORM
         /// <param name="classToDelete"></param>
         public void Delete<T>(T classToDelete)
         {
-            TableSql table = NameConverter.GetTableSql(classToDelete);
+            TableSql table = NameConverter.GetTableSql(classToDelete, type);
             string whereCondition = "";
             int i = 0;
 
@@ -276,7 +279,7 @@ namespace ORM
         /// <param name="classToDelete"></param>
         public void DeleteAll<T>(T classToDelete)
         {
-            TableSql table = NameConverter.GetTableSql(classToDelete);
+            TableSql table = NameConverter.GetTableSql(classToDelete, type);
 
             string query = $"DELETE FROM {table.TableName}";
 
@@ -299,7 +302,7 @@ namespace ORM
         /// <returns></returns>
         public T SelectOne<T>(T @class, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
-            TableSql table = NameConverter.GetTableSql(@class);
+            TableSql table = NameConverter.GetTableSql(@class, type);
             string wherequery = "";
             string selectquery = "";
             string joinquery = "";
@@ -474,7 +477,7 @@ namespace ORM
         /// <returns></returns>
         public List<T> SelectAll<T>(T @class, List<String> selects = null, string correspondance = null, string wheres = " ", (string, string, string) join = default((string, string, string)))
         {
-            TableSql table = NameConverter.GetTableSql(@class);
+            TableSql table = NameConverter.GetTableSql(@class, type);
             string wherequery = "";
             string selectquery = "";
             string joinquery = "";

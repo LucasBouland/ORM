@@ -44,7 +44,7 @@ namespace TestsORM
             string server = "localhost";
             string database = "bddtest";
             string uid = "root";
-            string password = "root";
+            string password = "";
             string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
                                       database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
@@ -55,7 +55,7 @@ namespace TestsORM
         {
             string server = "localhost";
             string database = "bddtest";
-            string uid = "";
+            string uid = "root";
             string password = "";
             string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
                                       database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
@@ -68,7 +68,7 @@ namespace TestsORM
             string server = "localhost";
             string database = "bddtest";
             string uid = "root";
-            string password = "root";
+            string password = "";
             string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
                                       database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             DbConnect db = new DbConnect(DatabaseType.Postgres, connectionString);
@@ -83,7 +83,7 @@ namespace TestsORM
         private string server = "localhost";
         private string database = "bddtest";
         private string uid = "root";
-        private string password = "root";
+        private string password = "";
 
         //MySQL
         // TODO : simplifier les requetes
@@ -211,14 +211,14 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void ClassToSqlTest()
         {
-            User user = new User();
+            /*User user = new User();
 
             TableSql a = NameConverter.GetTableSql(user);
             System.Console.WriteLine(a.TableName);
             foreach (var p in a.ColumnList)
             {
                 System.Console.WriteLine(p);
-            }
+            }*/
         }
 
         [TestMethod]
@@ -249,9 +249,8 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         static string server { get; set; } = "localhost"; 
         static string database = "bddtest";
         static string uid = "root";
-        static string password = "root";
-        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                  database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";;
+        static string password = "";
+        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" + database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
 
         // TODO : Affiner tests avec le mapping demandé (II.1)
 
@@ -351,10 +350,10 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
 
             User user = new User();
-            user.Id = 4;
-            user.Username = "Jacques";
-            user.Password = "Test";
-            user.Email = @"Jacques.Test@mail.com";
+            user.Id = 1;
+            user.Username = "Ahab";
+            user.Password = "hunter2";
+            user.Email = @"Ahab@WhiteWhale.com";
             user.AddressId = 1;
 
             db.Delete(user);

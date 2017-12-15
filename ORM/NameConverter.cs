@@ -10,6 +10,7 @@ namespace ORM
     public class TableSql
     {
         public string TableName { get; set; }
+        public string ShemaName { get; set; }
         public List<string> ColumnList { get; set; }
 
         public TableSql()
@@ -26,11 +27,22 @@ namespace ORM
 
     public class NameConverter
     {
-        public static TableSql GetTableSql<T>(T objectClass)
+        public static TableSql GetTableSql<T>(T objectClass, DatabaseType type)
         {
             TableSql table = new TableSql();
 
-            table.TableName = ToSql(typeof(T).Name);
+            switch (type)
+            {
+                case DatabaseType.Postgres:
+                    table.TableName = table.ShemaName + "." + ToSql(typeof(T).Name);
+                    break;
+                case DatabaseType.MySql:
+                    table.TableName = ToSql(typeof(T).Name);
+                    break;
+                case DatabaseType.SqlServer:
+                    table.TableName = ToSql(typeof(T).Name);
+                    break;
+            }
 
             foreach (PropertyInfo prop in typeof(T).GetProperties())
             {
