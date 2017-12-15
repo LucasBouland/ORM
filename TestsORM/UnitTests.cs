@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace TestsORM
 {
-
+   
     #region test classes
     // Classe representant la table user
     public class User
@@ -246,6 +246,12 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
     [TestClass]
     public class CommandTest
     {
+        static string server { get; set; } = "localhost"; 
+        static string database = "bddtest";
+        static string uid = "root";
+        static string password = "root";
+        static string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                  database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";;
 
         // TODO : Affiner tests avec le mapping demandé (II.1)
 
@@ -253,12 +259,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectAllTest()
         {
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             User u = new User();
 
@@ -281,15 +282,9 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectOneTest()
         {
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
-
-
+            
             Console.WriteLine("Test de Janine");
             List<string> selects = new List<string>();
             selects.Add("username");
@@ -313,12 +308,6 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void InsertTest()
         {
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             User user = new User();
             user.Id = 0;
@@ -336,12 +325,6 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void UpdateTest()
         {
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
             
             User user = new User();
@@ -365,12 +348,6 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void DeleteTest()
         {
-            string server = "localhost";
-            string database = "bddtest";
-            string uid = "root";
-            string password = "root";
-            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
             DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
 
             User user = new User();
