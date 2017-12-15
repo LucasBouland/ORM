@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ORM;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace TestsORM
 {
-    #region classes
+    #region test classes
     // Classe representant la table user
     public class User
     {
@@ -37,6 +38,48 @@ namespace TestsORM
     }
     #endregion
 
+    [TestClass]
+    public class FactoryTests
+    {
+
+        [TestMethod]
+        public void MySqlConnectTest()
+        {
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.MySql, connectionString);
+
+        }
+        [TestMethod]
+        public void SqlServerConnectTest()
+        {
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "";
+            string password = "";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
+
+        }
+        [TestMethod]
+        public void PostgresConnectTest()
+        {
+            string server = "localhost";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.Postgres, connectionString);
+
+        }
+
+    }
     [TestClass]
     public class SetupTests
     {
@@ -173,6 +216,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         public void ClassToSqlTest()
         {
             User user = new User();
+
             TableSql a = NameConverter.GetTableSql(user);
             System.Console.WriteLine(a.TableName);
             foreach (var p in a.ColumnList)
@@ -212,8 +256,9 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void SelectAllTest()
         {
-            DbConnect db = new DbConnect();
+            DbConnect db = new DbConnect(DatabaseType.MySql, "SERVER=\"localhost\";DATABASE=\bddtest\";UID=\"root\";PASSWORD=\"root\"");
             User u = new User();
+
             List<User> user = db.SelectAll(u);
             Assert.AreEqual(user.Count,3);
             Assert.AreEqual(user[0].Email, "Ahab@WhiteWhale.com");
@@ -227,12 +272,15 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             Console.WriteLine(users[1].Email);
             Assert.AreEqual(users[0].Username, "Ahab");
             Assert.AreEqual(users[1].Username, "Ishmael");            
+
         }
 
         [TestMethod]
         public void SelectOneTest()
         {
+
             DbConnect db = new DbConnect();
+
 
             Console.WriteLine("Test de Janine");
             List<string> selects = new List<string>();
@@ -268,7 +316,13 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void InsertTest()
         {
-            DbConnect db = new DbConnect();
+            string server = @"localhost\SQLEXPRESS";
+            string database = "bddtest";
+            string uid = "root";
+            string password = "root";
+            string connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+                                      database + ";Trusted_Connection=True;" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+            DbConnect db = new DbConnect(DatabaseType.SqlServer, connectionString);
             User user = new User();
             user.Id = 0;
             user.Username = "Jacques";
@@ -285,6 +339,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
         [TestMethod]
         public void UpdateTest()
         {
+
             DbConnect db = new DbConnect();
             
             User user = new User();
@@ -302,6 +357,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             user2.AddressId = 3;
 
             db.UpdateOne(user2, user);
+
         }
 
         [TestMethod]
@@ -320,6 +376,7 @@ CREATE TABLE IF NOT EXISTS `bddtest`.`user` (
             User u = new User { Username = "Jacques" };
             u = db.SelectOne(u, null, "Username");
             Assert.AreEqual(u.Email, null);
+
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using MySql.Data.MySqlClient;
@@ -12,47 +13,102 @@ using Npgsql;
 namespace ORM
 {
 
-    // TODO : Rassembler les trois classes en une gestion unique du type de base
+    public enum DatabaseType
+    {
+        MySql,
+        Postgres,
+        SqlServer
+    }
 
-    #region Mysql
+
+    // TODO : Rassembler les trois classes en une gestion unique du type de base
     public class DbConnect
     {
-        private MySqlConnection connection;
-        private string server;
-        private string database;
-        private string uid;
-        private string password;
+        private DbConnection connection;
 
+        #region Get Database Class
         /// <summary>
-        /// 
+        /// Retourne une connexion du type donné en dbType
         /// </summary>
-        public DbConnect()
+        /// <param name="dbType"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static DbConnection GetConnection(DatabaseType dbType, string connectionString)
         {
-            Initialize();
+            switch (dbType)
+            {
+                case DatabaseType.MySql:
+                    return new MySqlConnection(connectionString);
+                case DatabaseType.Postgres:
+                    return new NpgsqlConnection(connectionString);
+                case DatabaseType.SqlServer:
+                    return new SqlConnection(connectionString);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+        /// <summary>
+        /// Retourne une commande dont le type correspond à celui de la connection
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        public static DbCommand GetCommand(string query, DbConnection connection)
+        {
+            string co = connection.GetType().Name;
+
+            switch (co)
+            {
+                case "MySqlConnection":
+                    return new MySqlCommand(query, (MySqlConnection)connection);
+                case "SqlConnection":
+                    return new SqlCommand(query, (SqlConnection)connection);
+                case "NpgsqlConnection":
+                    return new NpgsqlCommand(query, (NpgsqlConnection)connection);
+                default:
+                    throw new NotImplementedException();
+            }
+
+        }
+        #endregion
+
+        public DbConnect(DatabaseType dbType, string connectionString)
+        {
+            Initialize(dbType, connectionString);
         }
 
+        private void Initialize(DatabaseType dbType, string connectionString)
+        {
+            try
+            {
+                this.connection = GetConnection(dbType, connectionString);
+
+            }
+            catch (DbException e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+
+            Console.WriteLine(connection);
+        }
         // TODO : Faire passer les champs via un fichier xml type settings.xml
-        /// <summary>
-        /// 
-        /// </summary>
-        private void Initialize()
-        {
-            server = "localhost";
-            database = "bddtest";
-            uid = "root";
-            password = "root";
-            string connectionString;
-            connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-            database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-
-            connection = new MySqlConnection(connectionString);
-        }
+        /* private void Initialize(DatabaseType dbType, string connectionString)
+         {
+             server = "localhost";
+             database = "testbdd";
+             uid = "root";
+             password = "";
+             string connectionString;
+             connectionString = "SERVER=" + server + ";" + "DATABASE=" +
+             database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
+             DbConnectionFactory testFactory = new DbConnectionFactory();
+             IDbAction testCo = testFactory.GetConnection(DatabaseType.MySql);
+             connection = testCo.CreateConnection(connectionString);
+             Console.WriteLine(connection.GetType());
+         }*/
 
         // TODO : expliciter la gestion des erreurs
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private bool OpenConnection()
         {
             try
@@ -60,27 +116,13 @@ namespace ORM
                 connection.Open();
                 return true;
             }
-            catch (MySqlException ex)
+            catch (DbException ex)
             {
                 Console.WriteLine(ex.Message);
-                switch (ex.Number)
-                {
-                    case 0:
-                        Console.WriteLine("Cannot connect to server.  Contact administrator");
-                        break;
-
-                    case 1045:
-                        Console.WriteLine("Invalid username/password, please try again");
-                        break;
-                }
                 return false;
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private bool CloseConnection()
         {
             try
@@ -88,14 +130,14 @@ namespace ORM
                 connection.Close();
                 return true;
             }
-            catch (MySqlException ex)
+            catch (DbException ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
             }
         }
 
-        /// <summary>
+      /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -133,7 +175,7 @@ namespace ORM
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
+                DbCommand cmd = GetCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
@@ -177,7 +219,7 @@ namespace ORM
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
+                DbCommand cmd = GetCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
@@ -208,7 +250,7 @@ namespace ORM
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
+                DbCommand cmd = GetCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
@@ -240,7 +282,7 @@ namespace ORM
 
             if (this.OpenConnection() == true)
             {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
+                DbCommand cmd = GetCommand(query, connection);
                 cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
@@ -310,8 +352,8 @@ namespace ORM
             if (this.OpenConnection() == true)
             {
                 //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+                DbCommand cmd = GetCommand(query, connection);
+                DbDataReader dataReader = cmd.ExecuteReader();
                 PropertyInfo[] properties = @class.GetType().GetProperties();
 
                 //lit et parcours les propietes de la classe a completer
@@ -398,8 +440,8 @@ namespace ORM
             if (this.OpenConnection() == true)
             {
                 //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+                DbCommand cmd = GetCommand(query, connection);
+                DbDataReader dataReader = cmd.ExecuteReader();
                 string retour = "";
 
                 //lit l'object de lecture
@@ -486,8 +528,8 @@ namespace ORM
             if (this.OpenConnection() == true)
             {
                 //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+                DbCommand cmd = GetCommand(query, connection);
+                DbDataReader dataReader = cmd.ExecuteReader();
                 PropertyInfo[] properties = @class.GetType().GetProperties();
                 int compteur = 0;
                 //lit et parcours les propietes de la classe a completer
@@ -583,8 +625,8 @@ namespace ORM
             if (this.OpenConnection() == true)
             {
                 //Prépare la commande, l'execute puis recupere un objet de lecture de la reponse
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+                DbCommand cmd = GetCommand(query, connection);
+                DbDataReader dataReader = cmd.ExecuteReader();
 
                 //lit l'object de lecture
                 while (dataReader.Read())
@@ -608,6 +650,8 @@ namespace ORM
         }
 
     }
-    #endregion
 
 }
+
+
+
